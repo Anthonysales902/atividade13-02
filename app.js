@@ -2,7 +2,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const session = require('express-session');
-const userController = require('./controllers/userController');
+const userController = require('./userController');
 const app = express();
 
 app.use(express.static('public'));
@@ -17,7 +17,7 @@ app.use(session({
 // Rotas
 app.get('/', (req, res) => res.render('login'));
 app.post('/login', userController.login);
-app.get('/dashboard', requireAuth, (req, res) => res.render('dashboard'));
+app.get('/dashboard', (req, res) => res.render('dashboard'));
 app.get('/logout', userController.logout);
 app.get('/register', (req, res) => res.render('register'));
 app.post('/register', userController.register);
