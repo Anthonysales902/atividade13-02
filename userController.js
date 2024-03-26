@@ -1,31 +1,46 @@
 // userController.js
-const User = require('../models/User');
+const User = require('./User.js');
 
-exports.login = async (req, res) => {
+exports.login = (req, res) => {
     const { username, password } = req.body;
-    const user = await User.findUserByUsername(username);
-    if (user && user.password === password) {
-        res.cookie('username', user.username);
-        req.session.userId = user.id;
-        res.redirect('/dashboard');
-    } else {
-        res.send('Credenciais inválidas. Por favor, tente novamente.');
-    }
+    User.findUserByUsername(username, function(err, user) {
+        if (err) {
+            // Tratar erro
+            return res.send('Erro ao buscar usuário.');
+        }
+        if (user && user.password === password) {
+            res.cookie('username', user.username);
+            req.session.userId = user.id;
+            res.redirect('/dashboard');
+        } else {
+            res.send('Credenciais inválidas. Por favor, tente novamente.');
+        }
+    });
 };
 
-exports.register = async (req, res) => {
+exports.register = (req, res) => {
     const { username, password } = req.body;
-    const existingUser = await User.findUserByUsername(username);
-    if (existingUser) {
-        res.send('Usuário já existe. Por favor, escolha outro nome de usuário.');
-    } else {
-        const userId = await User.createUser(username, password);
-        res.redirect('/');
-    }
+    User.findUserByUsername(username, function(err, existingUser) {
+        if (err) {
+            // Tratar erro
+            return res.send('Erro ao buscar usuário.');
+        }
+        if (existingUser) {
+            res.send('Usuário já existe. Por favor, escolha outro nome de usuário.');
+        } else {
+            User.createUser(username, password, function(err, userId) {
+                if (err) {
+                    // Tratar erro
+                    return res.send('Erro ao criar usuário.');
+                }
+                res.redirect('/');
+            });
+        }
+    });
 };
 
 exports.logout = (req, res) => {
-    req.session.destroy(err => {
+    req.session.destroy(function(err) {
         if (err) {
             console.error(err);
         } else {
